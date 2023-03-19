@@ -2,7 +2,9 @@ import { createContext, useContext } from "react";
 import { useQuery, useMutation, useQueryClient } from "react-query";
 import PocketBase from "pocketbase";
 
-const pb = new PocketBase(process.env.REACT_APP_PB_URL);
+const pb = new PocketBase(
+	process.env.REACT_APP_PB_URL || process.env.NEXT_PUBLIC_PB_URL
+);
 
 // items 'blocked by something' should be at the bottom of the list
 const taskCost = (t) => (!t.blockers.length ? t.priority * 10 + t.cost : 0);
@@ -18,14 +20,18 @@ export const TasksProvider = ({ children }) => {
 		data: tasks = [],
 		isLoading,
 		isError,
+		error: tasksError,
 		refetch
 	} = useQuery(
 		"tasks",
 		async () => {
-			await pb.admins.authWithPassword(
-				process.env.REACT_APP_PB_ADMIN_EMAIL,
-				process.env.REACT_APP_PB_ADMIN_PASSWORD
-			);
+			if (pb.authStore.isValid === false)
+				await pb.admins.authWithPassword(
+					process.env.REACT_APP_PB_ADMIN_EMAIL ||
+						process.env.NEXT_PUBLIC_PB_ADMIN_EMAIL,
+					process.env.REACT_APP_PB_ADMIN_PASSWORD ||
+						process.env.NEXT_PUBLIC_PB_ADMIN_PASSWORD
+				);
 			const data = await pb.collection("todo").getFullList();
 			return data;
 		},
@@ -146,6 +152,7 @@ export const TasksProvider = ({ children }) => {
 				tasks,
 				isLoading,
 				isError,
+				tasksError,
 
 				addTask,
 				isAddLoading,

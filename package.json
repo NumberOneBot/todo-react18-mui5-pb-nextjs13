@@ -2,17 +2,17 @@
 	"name": "sos",
 	"version": "0.1.0",
 	"private": true,
-	"homepage": "/resume/ToDo",
+	"homepage": "/",
 	"dependencies": {
 		"@emotion/react": "^11.10.6",
 		"@emotion/styled": "^11.10.6",
 		"@mui/icons-material": "^5.11.11",
-		"@mui/material": "^5.11.12",
+		"@mui/material": "^5.11.13",
 		"@testing-library/jest-dom": "^5.16.5",
 		"@testing-library/react": "^13.4.0",
 		"@testing-library/user-event": "^13.5.0",
 		"faker": "5.5.3",
-		"next": "^13.2.4",
+		"next": "latest",
 		"pocketbase": "^0.12.1",
 		"react": "^18.2.0",
 		"react-dom": "^18.2.0",
@@ -28,7 +28,9 @@
 		"start": "react-scripts start",
 		"build": "react-scripts build",
 		"test": "react-scripts test",
-		"eject": "react-scripts eject"
+		"eject": "react-scripts eject",
+		"next-start": "next dev -p 4000",
+		"next-build": "next build"
 	},
 	"browserslist": {
 		"production": [

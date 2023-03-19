@@ -1,4 +1,5 @@
 import { useState, useEffect, createRef } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import {
 	Box,
 	List,
@@ -12,17 +13,24 @@ import {
 	TodoScrollableBox,
 	TodoLoading,
 	TodoEmpty,
+	TodoError,
 	TodoListItem,
 	todoListItemRipple
 } from "./presentational";
 import { useTasks } from "../contexts/TasksContext";
 
 export default function Today({ toggleAdmit }) {
-	const { tasks, isLoading, completeTask, removeCompleted } = useTasks();
-	const [sortMode, setSortMode] = useState(() => {
-		const storedSortMode = localStorage.getItem("sortMode");
-		return storedSortMode !== null ? storedSortMode : "all";
-	});
+	const {
+		tasks,
+		isLoading,
+		isError,
+		tasksError: errorMessage,
+		completeTask,
+		removeCompleted
+	} = useTasks();
+	const params = useParams();
+	const navigate = useNavigate();
+	const [sortMode, setSortMode] = useState(() => params.sortMode || "all");
 
 	const todayTasks = [];
 	let pendingTasksCost = 0;
@@ -53,10 +61,10 @@ export default function Today({ toggleAdmit }) {
 	});
 
 	const sortedTodayTasks = todayTasks.sort((a, b) => b.admitAt - a.admitAt);
-	const disabled = newTasksCount === 0;
+	const disabled = isError || isLoading || newTasksCount === 0;
 
 	useEffect(() => {
-		localStorage.setItem("sortMode", sortMode);
+		navigate(`/today/${sortMode}`, { replace: true });
 	}, [sortMode]);
 
 	const itemRefs = todayTasks.map(() => createRef());
@@ -80,62 +88,76 @@ export default function Today({ toggleAdmit }) {
 			/>
 			<TodoScrollableBox>
 				{isLoading && <TodoLoading />}
-				<Box textAlign="center">
-					<ToggleButtonGroup
-						size="small"
-						sx={{
-							mt: 2,
-							mb: 1,
-							background: "#fff"
-						}}
-						exclusive
-						value={sortMode}
-						onChange={
-							(e, value) => value !== null && setSortMode(value) // value can be null if the user clicks the same button twice
-						}
-					>
-						<ToggleButton value="all">All</ToggleButton>
-						<ToggleButton value="pending">Pending</ToggleButton>
-						<ToggleButton value="completed">Completed</ToggleButton>
-					</ToggleButtonGroup>
-				</Box>
-				{sortedTodayTasks.length > 0 && (
+				{isError && <TodoError message={errorMessage} />}
+				{!isError && !isLoading && (
 					<>
-						<List sx={{ m: 0, py: 1, background: "none" }}>
-							{sortedTodayTasks.map((task, i) => (
-								<TodoListItem
-									key={task.id}
-									ref={itemRefs[i]}
-									border={false}
-									showBlockers
-									{...task}
-									onClick={() => itemClick(task)}
-								/>
-							))}
-						</List>
-						{sortMode !== "pending" && completedTasksCount > 0 && (
-							<Box sx={{ mb: 1 }} textAlign="center">
-								<Button
-									variant="contained"
-									onClick={removeCompleted}
-								>
-									<RemoveDoneIcon sx={{ mr: 1 }} /> Remove
-									completed
-								</Button>
-							</Box>
-						)}
-						{sortMode !== "completed" && pendingTasksCount > 0 && (
-							<Box
-								textAlign="center"
-								sx={{ color: "text.disabled" }}
+						<Box textAlign="center">
+							<ToggleButtonGroup
+								size="small"
+								sx={{
+									mt: 2,
+									mb: 1,
+									background: "#fff"
+								}}
+								exclusive
+								value={sortMode}
+								onChange={
+									(e, value) =>
+										value !== null && setSortMode(value) // value can be null if the user clicks the same button twice
+								}
 							>
-								{pendingTasksCount} Remaining (Total{" "}
-								{pendingTasksCost} hours)
-							</Box>
+								<ToggleButton value="all">All</ToggleButton>
+								<ToggleButton value="pending">
+									Pending
+								</ToggleButton>
+								<ToggleButton value="completed">
+									Completed
+								</ToggleButton>
+							</ToggleButtonGroup>
+						</Box>
+						{sortedTodayTasks.length > 0 && (
+							<>
+								<List sx={{ m: 0, py: 1, background: "none" }}>
+									{sortedTodayTasks.map((task, i) => (
+										<TodoListItem
+											key={task.id}
+											ref={itemRefs[i]}
+											border={false}
+											showBlockers
+											{...task}
+											onClick={() => itemClick(task)}
+										/>
+									))}
+								</List>
+								{sortMode !== "pending" &&
+									completedTasksCount > 0 && (
+										<Box sx={{ mb: 1 }} textAlign="center">
+											<Button
+												variant="contained"
+												onClick={removeCompleted}
+											>
+												<RemoveDoneIcon
+													sx={{ mr: 1 }}
+												/>{" "}
+												Remove completed
+											</Button>
+										</Box>
+									)}
+								{sortMode !== "completed" &&
+									pendingTasksCount > 0 && (
+										<Box
+											textAlign="center"
+											sx={{ color: "text.disabled" }}
+										>
+											{pendingTasksCount} Remaining (Total{" "}
+											{pendingTasksCost} hours)
+										</Box>
+									)}
+							</>
 						)}
+						{sortedTodayTasks.length === 0 && <TodoEmpty />}
 					</>
 				)}
-				{!isLoading && sortedTodayTasks.length === 0 && <TodoEmpty />}
 			</TodoScrollableBox>
 		</>
 	);

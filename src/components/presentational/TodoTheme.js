@@ -4,9 +4,12 @@ export const TodoTheme = createTheme({
 	palette: {
 		type: "light",
 		background: {
-			default: "#ccc",
+			default: "#ddd",
 			paper: "#fff"
 		}
+		// primary: {
+		// 	main: "#4C6EF5"
+		// }
 	},
 	components: {
 		MuiAppBar: {

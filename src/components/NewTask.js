@@ -20,7 +20,7 @@ import { useTasks } from "../contexts/TasksContext";
 import faker from "faker";
 
 export default function NewTask({ open, close = (f) => f }) {
-	const { addTask, isAddLoading } = useTasks();
+	const { addTask } = useTasks();
 
 	// because of the Controller overbloated props, switching to `react-hook-form` added more code lines and complexity than the basic solution with refs and states
 	const {

@@ -12,7 +12,7 @@ export const TodoBottomBar = () => {
 
 	return (
 		<BottomNavigation
-			value={value}
+			value={value.indexOf("/today") !== -1 ? "/today/all" : value}
 			showLabels
 			sx={{
 				backgroundColor: "#ffffff50",
@@ -38,9 +38,9 @@ export const TodoBottomBar = () => {
 			/>
 			<BottomNavigationAction
 				component={NavLink}
-				to="/today"
+				to="/today/all"
 				label="Today"
-				value="/today"
+				value="/today/all"
 				icon={<PlaylistAddCheckIcon />}
 			/>
 		</BottomNavigation>

@@ -1,3 +1,5 @@
+"use client";
+
 // react libraries
 import { useReducer, lazy, Suspense } from "react";
 // react-query
@@ -52,7 +54,7 @@ export default function App() {
 										}
 									/>
 									<Route
-										path="/today"
+										path="/today/:sortMode?"
 										element={
 											<Today toggleAdmit={toggleAdmit} />
 										}
