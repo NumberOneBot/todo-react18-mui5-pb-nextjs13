@@ -1,6 +1,6 @@
 # Todo App
 
-This project is one more solution to a well-known [Backpack Problem](https://brilliant.org/wiki/backpack-problem/). The initial app sketches resembled a lot like a simple [mobile app](https://github.com/NumberOneBot/todo-react18-mui5-pb-nextjs13/blob/master/assets/markup.png?raw=true), so I decided to give a try to Material UI v5 library, which I wasn't familiar with, despite its huge popularity. Creating markup by hand or using good ol' Bootstrap would definitelly be much faster, but I wanted to take a chance and play around and experiment with the MUI. This decision had a big impact on the overall architecture, and I'm not quite happy with the final result. I'll discuss this more later.
+This project is one more solution to a well-known [Backpack Problem](https://brilliant.org/wiki/backpack-problem/). The initial app sketches resembled a lot like a simple [mobile app](https://github.com/NumberOneBot/todo-react18-mui5-pb-nextjs13/blob/master/assets/markup.png?raw=true), so I decided to give a try to Material UI v5 library, which I wasn't familiar with, despite its huge popularity. Creating markup by hand or using good ol' Bootstrap would definitelly be much faster, but I wanted to take a chance and play around, experiment with the MUI. This decision had a big impact on the overall architecture, and I'm not quite happy with the final result. I'll discuss this more later.
 
 My plan consisted of several steps:
 
@@ -17,7 +17,7 @@ Dealing with form components became the most annoying and time-consuming part, a
 
 ### #2
 
-The most fun was the Backpack algorithm + additional logic to deal with locked items. Everything becomes clear once you realise that the batch could be filled in one run through the array, if it was sorted by the right rules. This even includes picking of the locked items, if their dependencies are also included in the batch or already present in the pending list.
+The most fun was the Backpack algorithm + additional logic to deal with locked items. Everything becomes clear once you realise that the batch could be filled in one array iteration, if it was previously sorted with the right rules. This even includes picking of the locked items, if their dependencies are also included in the batch or already present in the pending list.
 
 _(Clicking the locked item highlights its blockers. I came out with this solution to do not add more mess in layout and DOM tree.)_
 
@@ -44,3 +44,15 @@ It appears MUI V5 is simply not ready yet for the new architecture of NextJS V13
 So, the only way to make it work without tons of hacks and workarounds was to switch to client-side rendering from the very beginning (`"use client";`). The entire application is no longer a NextJS app, but a simple React app, using NextJS solely as a thin server layer with some routing support. This also means that even database connections are made on the client-side, which is not a good practice at all. I can try to use NextJS `rewrites` or `redirects` to proxy all API requests from the client and hide the authentication part, but this isn't a good solution either.
 
 One more hacky approach had to be used even in the smallest part, like `.env.local`, since NextJS doesn't expose its context to the client-side code without `NEXT_PUBLIC_` prefixes.
+
+## Installation
+
+```
+
+npm install
+
+pb/pocketbase serve
+
+react-scripts start
+
+```
