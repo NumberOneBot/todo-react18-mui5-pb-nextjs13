@@ -1,6 +1,6 @@
 # Todo App
 
-This project is one more solution to a well-known [Backpack Problem](https://brilliant.org/wiki/backpack-problem/). The initial app sketches resembled a lot like a simple mobile app, so I decided to give a try to Material UI v5 library, which I wasn't familiar with, despite its huge popularity. Creating markup by hand or using good ol' Bootstrap would definitelly be much faster, but I wanted to take a chance and play around and experiment with the MUI. This decision had a big impact on the overall architecture, and I'm not quite happy with the final result. I'll discuss this more later.
+This project is one more solution to a well-known [Backpack Problem](https://brilliant.org/wiki/backpack-problem/). The initial app sketches resembled a lot like a simple [mobile app](https://github.com/NumberOneBot/todo-react18-mui5-pb-nextjs13/blob/master/assets/markup.png?raw=true), so I decided to give a try to Material UI v5 library, which I wasn't familiar with, despite its huge popularity. Creating markup by hand or using good ol' Bootstrap would definitelly be much faster, but I wanted to take a chance and play around and experiment with the MUI. This decision had a big impact on the overall architecture, and I'm not quite happy with the final result. I'll discuss this more later.
 
 My plan consisted of several steps:
 
