@@ -1,70 +1,46 @@
-# Getting Started with Create React App
+# Todo App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+This project is one more solution to a well-known [Backpack Problem](https://brilliant.org/wiki/backpack-problem/). The initial app sketches resembled a lot like a simple mobile app, so I decided to give a try to Material UI v5 library, which I wasn't familiar with, despite its huge popularity. Creating markup by hand or using good ol' Bootstrap would definitelly be much faster, but I wanted to take a chance and play around and experiment with the MUI. This decision had a big impact on the overall architecture, and I'm not quite happy with the final result. I'll discuss this more later.
 
-## Available Scripts
+My plan consisted of several steps:
 
-In the project directory, you can run:
+-   Study `MaterialUI` general structure and components
+-   Code the app logic and screen/view dependencies as a common React app with routes
+-   Get familiar with the `PocketBase` and connect it as a replacement for React's context provider with data caching
+-   Convert everything to `NextJS`, looking into the new `app` structure implemented in v13
 
-### `npm start`
+### #1
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+Going deep into MUI things hooked me for another two days: regular web interfaces depend on the full page rendering, including header/footer and so on, while the mobile apps mostly have the tabs/bottom bar as the main switcher of the views - it should appear first and be the main router, loading content inside the screen. The native iOS API also assumes content switching within a single/shared top bar, but this time I decided to duplicate it inside the main layouts, so as not to deal with switching titles and buttons. Dialog windows are also appearing on top of both views (by design), so they are also rendered on the top level. It is the same, mobile-first approach, widely popular in the native apps, but not so on the web. Routing part is split by page/view basis and the sorting mode switcher does its part inside the Today's view. Many people prefer to organize all the routing in one place, but such split also comes from the mobile world and have its own benefits, like the ability to use the same component in different routes. _I also wanted to have a separate routes for the dialog windows, so that they can be opened from the URL, but this is not implemented yet._
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+Dealing with form components became the most annoying and time-consuming part, as they all are controlled by MUI + have a lot of wrapping without exposing the native inputs. The first dirty version of form validation with a bunch of states and hand-written logic was actually ~20% smaller than connection of `react-form-hook` and use of its `Controller` component, which rerenders each field completely.
 
-### `npm test`
+### #2
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+The most fun was the Backpack algorithm + additional logic to deal with locked items. Everything becomes clear once you realise that the batch could be filled in one run through the array, if it was sorted by the right rules. This even includes picking of the locked items, if their dependencies are also included in the batch or already present in the pending list.
 
-### `npm run build`
+_(Clicking the locked item highlights its blockers. I came out with this solution to do not add more mess in layout and DOM tree.)_
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+### #3
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+The third part of the app was the data storage. I've heard about `PocketBase` a few times, but never had a chance to try it. Switching to it was pretty easy and straightforward. First implementation used built-in React context provider + `localStorage` and aggregated all the methods to alter the data, updating array as a whole. This has become handy for updating the `react-query` cache and using it as the main storage, while updating only altered entries in the database.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+An irritating discovery was the lack of the `updateMany` method in PocketBase API, so I had to write a custom one using `Promise.all`. Exposing of each mutation's loading and error states from my context provider also made it a bit overflown. It works for now, but I would consider splitting it by every mutation as many people do with `react-query`.
 
-### `npm run eject`
+I intentionally skipped the whole authorization part and just connect into the PB as an admin. Definitelly not a good practice, but I didn't want to spend time on this.
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+Nice (and obvious) addition to the interface was "Remove completed" button, which completes all the tasks life cycle and removes them from the database.
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### #4
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+And here comes an elephant in the room. 🐘
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+It appears MUI V5 is simply not ready yet for the new architecture of NextJS V13 with the dynamic use of server and client components together. No stateful component could be rendered on the server side (for obvious reasons), but most of the MUI ones have something stated/stored internally. It comes down even to the smallest things, like `BottomNavigationAction` with the `Link` to some page. CSS-caching / class-generation of `emotion/styled`, `emotion/react` libraries is also not ported to the server-side rendering yet _(and I heavily used inline CSS-in-JS styles, because, well, everybody does so in MUI)_.
 
-## Learn More
+(https://github.com/mui/material-ui/issues/34898)
+(https://github.com/mui/material-ui/issues/34905)
+(https://github.com/mui/material-ui/issues/34896)
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+So, the only way to make it work without tons of hacks and workarounds was to switch to client-side rendering from the very beginning (`"use client";`). The entire application is no longer a NextJS app, but a simple React app, using NextJS solely as a thin server layer with some routing support. This also means that even database connections are made on the client-side, which is not a good practice at all. I can try to use NextJS `rewrites` or `redirects` to proxy all API requests from the client and hide the authentication part, but this isn't a good solution either.
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+One more hacky approach had to be used even in the smallest part, like `.env.local`, since NextJS doesn't expose its context to the client-side code without `NEXT_PUBLIC_` prefixes.
